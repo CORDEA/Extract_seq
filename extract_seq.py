@@ -23,17 +23,6 @@
                   *_with_link.tsvからvimにより開くには vim `awk 'NR==(対象の行番号) {print $14}' Table10.1_with_link.tsv`
  この2つのファイルは_OUTPUT_DIRではなく実行したディレクトリ内に出力されます。
 
-
- benchmark: Fedora 19, i7-4770k, 4 Core 8 Thread
-    python extract_seq.py Table10.1  2175.71s user 25.12s system 557% cpu 6:34.47 total
-
- c=`wc -l Table10.1 | awk '{print $1}'`; echo $c
- >>> 1135
- awk '{print $9}' Table10.1 | sort | uniq -c | grep '\.1$' | awk -v c=$c 'BEGIN{i=0}{i+=$1}END{print c-i}'
- >>> 1083
- ls result | wc -l | awk '{print $1}'
- >>> 1083
-
 """
 
 __Author__  =  "Yoshihiro Tanaka"

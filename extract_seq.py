@@ -1,27 +1,27 @@
 #!/bin/env python
 # encoding:utf-8
 #
-"""Sequence_Extractor $BG[Ns$NFCDjNN0h$r@Z$j<h$C$FJ]B8$9$k%W%m%0%i%`(B
+"""Sequence_Extractor 配列の特定領域を切り取って保存するプログラム
 
  LAST_UPDATE   : 2014-10-11
- $B?d>)%Q%C%1!<%8(B: xlwt($BI,?\$G$O$"$j$^$;$s(B)
- $BF0:n3NG'4D6-(B  :
+ 推奨パッケージ: xlwt(必須ではありません)
+ 動作確認環境  :
     Mac OS X v10.9.4    (Python 2.7.6)
     Fedora 19           (Python 2.7.5)
-    *Python3$B7O$GF0:n$9$k$+$O$o$+$j$^$;$s!#(B*
+    *Python3系で動作するかはわかりません。*
 
- $B%3%^%s%I%i%$%s%*%W%7%g%s$N>\:Y$O(B*-h*$B$^$?$O(B*--help*$B$G3NG'$7$F2<$5$$!#(B
+ コマンドラインオプションの詳細は*-h*または*--help*で確認して下さい。
  
- $BCm0U;v9`(B:
- $B3F@w?'BNG[Ns$N%U%!%$%k$O>/$J$/$H$b(B*$B@w?'BNHV9f(B.fa$B$G=*$o$C$F$$$kI,MW$,$"$j$^$9!#(B
- $BF~NO@h%G%#%l%/%H%j(B(_INPUT_DIR)$B$K$O4pK\E*$KB>$N%U%!%$%k$,4^$^$l$F$$$F$bLdBjM-$j$^$;$s$,!"0[$J$k(B*.fa$B%U%!%$%k$,4^$^$l$F$$$k>l9g$O%(%i!<$K$J$j$^$9!#(B
+ 注意事項:
+ 各染色体配列のファイルは少なくとも*染色体番号.faで終わっている必要があります。
+ 入力先ディレクトリ(_INPUT_DIR)には基本的に他のファイルが含まれていても問題有りませんが、異なる*.faファイルが含まれている場合はエラーになります。
  
- $B=PNO$5$l$k%U%!%$%k$K$D$$$F(B:
- $B<B9T$9$kNN0h$rH4$-=P$7$?%U%!%$%k$NB>$K(Bxls$B%U%!%$%k(B(xlwt$B%Q%C%1!<%8F3F~;~$N$_(B)$B$H(B*_with_link.tsv$B%U%!%$%k$,:n@.$5$l$^$9!#(B
- xls$B%U%!%$%k(B    : $B:G8e$N(Bcolumn$B$K%U%!%$%k$X$N%O%$%Q!<%j%s%/(B($B@dBP%Q%9(B, HYPERLINK$B4X?t;HMQ(B)$B$,E=$i$l$?%(%/%;%9%U%!%$%k(B
- *_with_link.tsv: $B:G8e$N(Bcolumn$B$K%U%!%$%k$X$N@dBP%Q%9$r=q$-9~$s$@(Btsv$B%U%!%$%k(B
-                  *_with_link.tsv$B$+$i(Bvim$B$K$h$j3+$/$K$O(B vim `awk 'NR==($BBP>]$N9THV9f(B) {print $14}' Table10.1_with_link.tsv`
- $B$3$N(B2$B$D$N%U%!%$%k$O(B_OUTPUT_DIR$B$G$O$J$/<B9T$7$?%G%#%l%/%H%jFb$K=PNO$5$l$^$9!#(B
+ 出力されるファイルについて:
+ 実行する領域を抜き出したファイルの他にxlsファイル(xlwtパッケージ導入時のみ)と*_with_link.tsvファイルが作成されます。
+ xlsファイル    : 最後のcolumnにファイルへのハイパーリンク(絶対パス, HYPERLINK関数使用)が貼られたエクセスファイル
+ *_with_link.tsv: 最後のcolumnにファイルへの絶対パスを書き込んだtsvファイル
+                  *_with_link.tsvからvimにより開くには vim `awk 'NR==(対象の行番号) {print $14}' Table10.1_with_link.tsv`
+ この2つのファイルは_OUTPUT_DIRではなく実行したディレクトリ内に出力されます。
 
 
  benchmark: Fedora 19, i7-4770k, 4 Core 8 Thread
@@ -46,14 +46,14 @@ from multiprocessing import Pool
 from optparse import OptionParser
 
 def waypoint(args, **kwargs):
-    u"""multiprocessing$B%Q%C%1!<%8$r;HMQ$9$k$?$a$NCf7Q4X?t(B
+    u"""multiprocessingパッケージを使用するための中継関数
 
     ref. http://www.rueckstiess.net/research/snippets/show/ca1d7d90
     """
     return FileProcessing.multiProcessing(*args, **kwargs)
 
 def optSettings():
-    u"""$B%3%^%s%I%i%$%s%*%W%7%g%s$N4IM}4X?t(B"""
+    u"""コマンドラインオプションの管理関数"""
     usage   = "%prog [-ioc] [options] [file]\nDetailed options -h or --help"
     version = __version__
     parser  = OptionParser(usage=usage, version=version)
@@ -90,14 +90,14 @@ def optSettings():
 
 class FileProcessing:
     def __init__(self, options, args):
-        u"""$BEO$5$l$?%*%W%7%g%s$H0z?t$N@58m%A%'%C%/(B"""
+        u"""渡されたオプションと引数の正誤チェック"""
         try:
             self._TABLE_FILE = args[0]
         except:
             print "Table file is not specified."
             sys.exit()
         self._INPUT_DIR  = options.input_dir.rstrip("/")
-        # $B%U%!%$%k$,;XDj$5$l$F$$$?>l9g$O=*N;(B
+        # ファイルが指定されていた場合は終了
         if os.path.isfile(self._INPUT_DIR):
             print "Please specify the directory name, not the file name."
             sys.exit()
@@ -106,16 +106,16 @@ class FileProcessing:
             print "Please specify the directory name, not the file name."
             sys.exit()
         else:
-            # $B=PNO@h$K;XDj$5$l$?%G%#%l%/%H%j$,B8:_$7$J$1$l$P:n@.$9$k(B
+            # 出力先に指定されたディレクトリが存在しなければ作成する
             if not os.path.isdir(self._OUTPUT_DIR):
                 os.system('mkdir -p ' + self._OUTPUT_DIR)
         self._CPU_COUNT  = int(options.cpu_count)
 
     def createDict(self):
-        u"""$BCj=PBP>]$NG[Ns>pJs(B,$B5Z$S%U%!%$%k$H@w?'BNHV9f$H$NI3IU$1$r9T$&<-=q$N:n@.$r9T$&4X?t(B"""
-        u"""xargs -n 1 basename$B$G%Q%9$r:o$C$F%U%!%$%kL>$N$_<hF@$9$k(B
+        u"""抽出対象の配列情報,及びファイルと染色体番号との紐付けを行う辞書の作成を行う関数"""
+        u"""xargs -n 1 basenameでパスを削ってファイル名のみ取得する
 
-        split("/")[-1]$B$G$bBeMQ2D(B
+        split("/")[-1]でも代用可
         """
         fileList = [r for r in commands.getoutput('ls ' + self._INPUT_DIR + "/*.fa | xargs -n 1 basename").split("\n")]
         infile = open(self._TABLE_FILE, "r")
@@ -134,7 +134,7 @@ class FileProcessing:
             try:
                 exDict[chrom].append([EnsemblID, strand, start_pos, end_pos, block_count])
             except:
-                # $B3JG<@h$K%j%9%H$,B8:_$7$J$$>l9g?7$?$K:n@.$9$k(B
+                # 格納先にリストが存在しない場合新たに作成する
                 exDict[chrom] = []
                 exDict[chrom].append([EnsemblID, strand, start_pos, end_pos, block_count])
         return self.check(exDict, fileList)
@@ -146,14 +146,14 @@ class FileProcessing:
         for chrom in exDict.keys():
             for filename in fileList:
                 if "." + chrom + ".fa" in filename:
-                    # $B@w?'BNHV9f$H(Bfilename$B$r4XO"IU$1(B
+                    # 染色体番号とfilenameを関連付け
                     fileDict[chrom] = filename
-                    # exDict$B$+$i(BfileList$B$K$"$k@w?'BNHV9f$N$b$N$@$1H4$-=P$9(B
+                    # exDictからfileListにある染色体番号のものだけ抜き出す
                     tmpDict[chrom]  = exDict[chrom]
         return tmpDict, fileDict
 
     def extractSeq(self, filename, start_pos, end_pos):
-        u"""$BG[Ns$NFCDjNN0h$rH4$-=P$7$F$$$k4X?t(B"""
+        u"""配列の特定領域を抜き出している関数"""
         infile = open(self._INPUT_DIR + "/" + filename, "r")
 
         start = 1
@@ -166,7 +166,7 @@ class FileProcessing:
                 header = False
             else:
                 line = line.rstrip("\r\n")
-                # decode$B$7$F%P%$%H?t$+$iJ8;z?t$N%+%&%s%H$KJQ49(B($B%"%k%U%!%Y%C%H$J$N$G%P%$%H?t$G$bLdBj$O$J$$$,0l1~(B)
+                # decodeしてバイト数から文字数のカウントに変換(アルファベットなのでバイト数でも問題はないが一応)
                 length = len(line.decode('utf-8'))
                 if start <= end_pos and end_pos < start+length:
                     seq += line[:end_pos - start + 1]
@@ -214,7 +214,7 @@ class FileProcessing:
 
         if not single:
             try:
-                u"""KeyboardInterrupt$B$r@5>o$K=hM}$G$-$J$$%P%0$r2sHr$9$k$?$a$N5-=R(B
+                u"""KeyboardInterruptを正常に処理できないバグを回避するための記述
                 
                 ref. http://stackoverflow.com/questions/1408356/keyboard-interrupts-with-pythons-multiprocessing-pool
                 """
@@ -229,14 +229,14 @@ class FileProcessing:
                 pool.join()
 
     def linkFileCreate(self):
-        u"""$B85%U%!%$%k$K(Blink$B$rE=$C$F=PNO$7D>$9$?$a$N4X?t(B"""
+        u"""元ファイルにlinkを貼って出力し直すための関数"""
         xlsFlag = True
         try:
             import xlwt
         except ImportError as e:
             print e
             print "ex. sudo pip install xlwt"
-            # xlwt$B%Q%C%1!<%8$,%$%s%9%H!<%k$5$l$F$$$J$$>l9g$O%(%i!<$r=P$7$F(Btsv$B%U%!%$%k$N$_=PNO$9$k(B
+            # xlwtパッケージがインストールされていない場合はエラーを出してtsvファイルのみ出力する
             xlsFlag = False
         if xlsFlag:
             book = xlwt.Workbook()
@@ -258,7 +258,7 @@ class FileProcessing:
                     column += 1
                 sheet.col(1).width = 8000
                 sheet.col(8).width = 5000
-            u"""$BAjBP%Q%9(B, $B$b$7$/$O(B'../'$BEy$,4^$^$l$F$$$k%Q%9$r@dBP%Q%9$KJQ49$9$k(B
+            u"""相対パス, もしくは'../'等が含まれているパスを絶対パスに変換する
 
             ref. http://stackoverflow.com/questions/11246189/how-to-convert-relative-path-to-absolute-path-in-unix
             """
@@ -266,7 +266,7 @@ class FileProcessing:
             filename = cells[1] + "_" + cells[8] + "_" + cells[9] + "_" + cells[10] + "_" + cells[11] + "_" + cells[12] + ".txt"
             outFile.write(line.rstrip("\r\n") + "\t" + dirname + filename + "\n")
             if xlsFlag:
-                # HYPERLINK$B4X?t$r;HMQ$7$F(Blink$B$r@_Dj$9$k(B
+                # HYPERLINK関数を使用してlinkを設定する
                 sheet.write(row, column, xlwt.Formula('HYPERLINK("' +  dirname + filename + '","' + 'link' + '")'))
             row += 1
         outFile.close()

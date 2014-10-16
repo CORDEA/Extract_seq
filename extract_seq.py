@@ -69,8 +69,8 @@ def optSettings():
         action  = 'store',
         type    = 'int',
         dest    = 'extension',
-        default = '0',
-        help    = 'Extend the specified area. (ex. 200) [default: %default]'
+        default = '200',
+        help    = 'Extend the specified area. (ex. 0) [default: %default]'
     )
 
     parser.add_option(

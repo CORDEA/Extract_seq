@@ -3,7 +3,7 @@
 #
 """Sequence_Extractor 配列の特定領域を切り取って保存するプログラム
 
- LAST_UPDATE   : 2014-10-11
+ LAST_UPDATE   : 2014-10-16
  推奨パッケージ: xlwt(必須ではありません)
  動作確認環境  :
     Mac OS X v10.9.4    (Python 2.7.6)
@@ -27,8 +27,7 @@
 
 __Author__  =  "Yoshihiro Tanaka"
 __date__    =  "2014-10-10"
-__version__ =  "0.0.9"
-
+__version__ =  "0.1.1 (Stable)"
 
 import os, sys, commands
 from multiprocessing import Pool
@@ -66,12 +65,29 @@ def optSettings():
     )
 
     parser.add_option(
+        '-e', '--ext',
+        action  = 'store',
+        type    = 'int',
+        dest    = 'extension',
+        default = '0',
+        help    = 'Extend the specified area. (ex. 200) [default: %default]'
+    )
+
+    parser.add_option(
         '-c', '--cpucore',
         action  = 'store',
         type    = 'int',
         dest    = 'cpu_count',
         default = '-1',
         help    = 'Set number of worker processes (ex. 8) [default: %default (use all CPU cores)]'
+    )
+
+    parser.add_option(
+        '-s', '--strand',
+        action  = 'store_false',
+        dest    = 'strand',
+        default = True,
+        help    = 'Do not carry out reverse complement when this option is specified.'
     )
 
     return parser.parse_args()
@@ -98,7 +114,9 @@ class FileProcessing:
             # 出力先に指定されたディレクトリが存在しなければ作成する
             if not os.path.isdir(self._OUTPUT_DIR):
                 os.system('mkdir -p ' + self._OUTPUT_DIR)
+        self._EXTENSION  = int(options.extension)
         self._CPU_COUNT  = int(options.cpu_count)
+        self._STRAND     = options.strand
 
     def createDict(self):
         u"""抽出対象の配列情報,及びファイルと染色体番号との紐付けを行う辞書の作成を行う関数"""
@@ -145,6 +163,9 @@ class FileProcessing:
         u"""配列の特定領域を抜き出している関数"""
         infile = open(self._INPUT_DIR + "/" + filename, "r")
 
+        start_pos = start_pos - self._EXTENSION
+        end_pos   = end_pos   + self._EXTENSION
+
         start = 1
         line = infile.readline()
         flag = False
@@ -161,6 +182,10 @@ class FileProcessing:
                     seq += line[:end_pos - start + 1]
                     break
                 if start <= start_pos and start_pos < start+length:
+                    # startとendが同じlineにある時
+                    if start <= end_pos and end_pos < start+length:
+                        seq = line[start_pos - start:end_pos - start + 1]
+                        break
                     seq = line[start_pos - start:]
                     flag = True
                 else:
@@ -168,6 +193,22 @@ class FileProcessing:
                 start += length
             line = infile.readline()
         infile.close()
+        return seq
+
+    def reverseComp(self, seq):
+        u"""Reverse Complementを行う関数"""
+        seq_OLD = seq
+        seq = ""
+        reDict = {"A": "T", "T": "A", "G": "C", "C": "G"}
+        u"""文字列を反転させる
+
+        ref. http://d.hatena.ne.jp/redcat_prog/20111104/1320395840
+        """
+        for s in seq_OLD[::-1]:
+            if s in reDict:
+                seq += reDict[s]
+            else:
+                print("KeyError: " + str(s))
         return seq
 
     def multiProcessing(self, tuples):
@@ -178,6 +219,8 @@ class FileProcessing:
         for item in items:
             outFile = open(self._OUTPUT_DIR + "/" + item[0] + "_" + chrom + "_" + item[1] + "_" + str(item[2]) + "_" + str(item[3]) + "_" + item[4] + ".txt", "w")
             seq = self.extractSeq(filename, item[2], item[3])
+            if item[1] == "-" and self._STRAND:
+                seq = self.reverseComp(seq)
             outFile.write(seq)
             outFile.close()
         print("Finished the process of chromosome " + str(chrom) + ".")

@@ -11,7 +11,17 @@ Use library
 ---------------
 * xlwt (Not required)
 
-Version
+Version (recommended)
 ---------------
 * python 2.7.6
 * xlwt 0.7.5
+
+Change Log
+---------------
+* 0.1.1
+    * Add extension and strand options.
+        * extension
+             \- Extend the specified area. (ex. 200) [default: 0]
+        * strand
+             \- Do not carry out reverse complement when this option is specified.
+    * If the strand is negative, run the Reverse Complement by default.

@@ -208,7 +208,7 @@ class FileProcessing:
             if s in reDict:
                 seq += reDict[s]
             else:
-                print("KeyError: " + str(s))
+                seq += s
         return seq
 
     def multiProcessing(self, tuples):

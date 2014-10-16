@@ -42,7 +42,7 @@ def waypoint(args, **kwargs):
 
 def optSettings():
     u"""コマンドラインオプションの管理関数"""
-    usage   = "%prog [-ioc] [options] [file]\nDetailed options -h or --help"
+    usage   = "%prog [-ioce] [options] [-s] [file]\nDetailed options -h or --help"
     version = __version__
     parser  = OptionParser(usage=usage, version=version)
 

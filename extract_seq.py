@@ -1,9 +1,9 @@
 #!/bin/env python
 # encoding:utf-8
 #
-"""Sequence_Extractor 配列の特定領域を切り取って保存するプログラム
+u"""Sequence_Extractor 配列の特定領域を切り取って保存するプログラム
 
- LAST_UPDATE   : 2014-10-16
+ LAST_UPDATE   : 2014-10-18
  推奨パッケージ: xlwt(必須ではありません)
  動作確認環境  :
     Mac OS X v10.9.4    (Python 2.7.6)
@@ -27,7 +27,7 @@
 
 __Author__  =  "Yoshihiro Tanaka"
 __date__    =  "2014-10-10"
-__version__ =  "0.1.1 (Stable)"
+__version__ =  "0.1.3 (Beta)"
 
 import os, sys, commands
 from multiprocessing import Pool
@@ -90,6 +90,14 @@ def optSettings():
         help    = 'Do not carry out reverse complement when this option is specified.'
     )
 
+    parser.add_option(
+        '--silent',
+        action  = 'store_true',
+        dest    = 'silent',
+        default = False,
+        help    = 'Reduce the print statement when this option is specified.'
+    )
+
     return parser.parse_args()
 
 
@@ -114,9 +122,11 @@ class FileProcessing:
             # 出力先に指定されたディレクトリが存在しなければ作成する
             if not os.path.isdir(self._OUTPUT_DIR):
                 os.system('mkdir -p ' + self._OUTPUT_DIR)
+
         self._EXTENSION  = int(options.extension)
         self._CPU_COUNT  = int(options.cpu_count)
         self._STRAND     = options.strand
+        self._SILENT     = options.silent
 
     def createDict(self):
         u"""抽出対象の配列情報,及びファイルと染色体番号との紐付けを行う辞書の作成を行う関数"""
@@ -196,7 +206,7 @@ class FileProcessing:
         return seq
 
     def reverseComp(self, seq):
-        u"""Reverse Complementを行う関数"""
+        u"""Reverse complementを行う関数"""
         seq_OLD = seq
         seq = ""
         reDict = {"A": "T", "T": "A", "G": "C", "C": "G"}
@@ -215,19 +225,23 @@ class FileProcessing:
         chrom    = tuples[0]
         items    = tuples[1]
         filename = tuples[2]
-        print("Start the process of chromosome " + str(chrom) + ".")
+        if not self._SILENT:
+            print("Start the process of chromosome " + str(chrom) + ".")
         for item in items:
             outFile = open(self._OUTPUT_DIR + "/" + item[0] + "_" + chrom + "_" + item[1] + "_" + str(item[2]) + "_" + str(item[3]) + "_" + item[4] + ".txt", "w")
             seq = self.extractSeq(filename, item[2], item[3])
+            # strandが-の場合はReverse complementを行う
             if item[1] == "-" and self._STRAND:
                 seq = self.reverseComp(seq)
             outFile.write(seq)
             outFile.close()
-        print("Finished the process of chromosome " + str(chrom) + ".")
+        if not self._SILENT:
+            print("Finished the process of chromosome " + str(chrom) + ".")
         return
 
     def output(self, exDict, fileDict):
-        print "Start output"
+        if not self._SILENT:
+            print "Start output"
         single = False
         if self._CPU_COUNT == -1:
             pool = Pool()
@@ -294,7 +308,7 @@ class FileProcessing:
 
             ref. http://stackoverflow.com/questions/11246189/how-to-convert-relative-path-to-absolute-path-in-unix
             """
-            dirname  = os.system('cd ' + self._OUTPUT_DIR + ';pwd') + "/"
+            dirname  = commands.getoutput('cd ' + self._OUTPUT_DIR + ';pwd') + "/"
             filename = cells[1] + "_" + cells[8] + "_" + cells[9] + "_" + cells[10] + "_" + cells[11] + "_" + cells[12] + ".txt"
             outFile.write(line.rstrip("\r\n") + "\t" + dirname + filename + "\n")
             if xlsFlag:

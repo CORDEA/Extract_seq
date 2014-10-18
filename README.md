@@ -25,3 +25,9 @@ Change Log
         * strand
              \- Do not carry out reverse complement when this option is specified.
     * If the strand is negative, run the Reverse Complement by default.
+
+* 0.1.3
+    * Add extension and strand options.
+        * silent
+             \- Reduce the print statement when this option is specified.
+    * Fixed the bug in linkFileCreate function.

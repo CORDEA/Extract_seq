@@ -3,7 +3,7 @@
 #
 # Author : Yoshihiro Tanaka
 # Date   : 2014-11-04
-# Version: 0.1.2
+# Version: 0.1.3
 
 function output(chrom, header, seq) {
     filename = "db/Canis_familiaris.CanFam3.1.dna.chromosome." chrom ".fa";
@@ -13,8 +13,6 @@ function output(chrom, header, seq) {
     print "Successful output: " filename;
 }
 BEGIN {
-    "wc -l " ARGV[1] " | xargs -n 1 | head -n 1" | getline wc;
-    wc = wc ".0"
     c  = 0
 }
 {
@@ -31,7 +29,7 @@ BEGIN {
         seq = seq "\n" $0
     }
     c++;
-    printf("progress: %f%%\r\b", (c / wc)*100)
+    printf("progress: %d\r\b", c)
 }
 END {
     output(chrom, header, seq)

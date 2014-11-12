@@ -31,3 +31,8 @@ Change Log
         * silent
              \- Reduce the print statement when this option is specified.
     * Fixed the bug in linkFileCreate function.
+
+* 0.1.5
+    * Add extension and concat options.
+        * concat
+             \- Output the sequences in a line when this option is specified.

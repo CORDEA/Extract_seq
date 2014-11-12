@@ -3,7 +3,7 @@
 #
 u"""Sequence_Extractor 配列の特定領域を切り取って保存するプログラム
 
- LAST_UPDATE   : 2014-10-18
+ LAST_UPDATE   : 2014-11-13
  推奨パッケージ: xlwt(必須ではありません)
  動作確認環境  :
     Mac OS X v10.9.4    (Python 2.7.6)
@@ -27,7 +27,7 @@ u"""Sequence_Extractor 配列の特定領域を切り取って保存するプロ
 
 __Author__  =  "Yoshihiro Tanaka"
 __date__    =  "2014-10-10"
-__version__ =  "0.1.3 (Beta)"
+__version__ =  "0.1.5 (Stable)"
 
 import os, sys, commands
 from multiprocessing import Pool
@@ -42,7 +42,7 @@ def waypoint(args, **kwargs):
 
 def optSettings():
     u"""コマンドラインオプションの管理関数"""
-    usage   = "%prog [-ioce] [options] [-s] [file]\nDetailed options -h or --help"
+    usage   = "%prog [-ioce] [options] [-s] [--concat] [--silent] [file]\nDetailed options -h or --help"
     version = __version__
     parser  = OptionParser(usage=usage, version=version)
 
@@ -91,6 +91,14 @@ def optSettings():
     )
 
     parser.add_option(
+        '--concat',
+        action  = 'store_true',
+        dest    = 'concat',
+        default = False,
+        help    = 'Output the sequences in a line when this option is specified.'
+    )
+
+    parser.add_option(
         '--silent',
         action  = 'store_true',
         dest    = 'silent',
@@ -126,6 +134,7 @@ class FileProcessing:
         self._EXTENSION  = int(options.extension)
         self._CPU_COUNT  = int(options.cpu_count)
         self._STRAND     = options.strand
+        self._CONCAT     = options.concat
         self._SILENT     = options.silent
 
     def createDict(self):
@@ -233,7 +242,18 @@ class FileProcessing:
             # strandが-の場合はReverse complementを行う
             if item[1] == "-" and self._STRAND:
                 seq = self.reverseComp(seq)
-            outFile.write(seq)
+            if self._CONCAT:
+                outFile.write(seq)
+            else:
+                for i in range(1, len(seq)):
+                    if   i % 50 == 0:
+                        outFile.write(seq[:10] + "\n")
+                        seq = seq[10:]
+                    elif i % 10 == 0:
+                        outFile.write(seq[:10] + " ")
+                        seq = seq[10:]
+                if len(seq) != 0: 
+                    outFile.write(seq + "\n")
             outFile.close()
         if not self._SILENT:
             print("Finished the process of chromosome " + str(chrom) + ".")

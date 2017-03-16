@@ -32,6 +32,7 @@ __version__ = "1.0.0"
 import os, sys, commands
 from multiprocessing import Pool
 from optparse import OptionParser
+from operator import itemgetter
 
 
 def waypoint(args, **kwargs):
@@ -343,9 +344,8 @@ class FileProcessing:
             """
             dirname = commands.getoutput('cd ' + self._OUTPUT_DIR +
                                          ';pwd') + "/"
-            filename = cells[1] + "_" + cells[8] + "_" + cells[
-                9] + "_" + cells[10] + "_" + cells[11] + "_" + cells[
-                    12] + ".txt"
+            indexes = [1, 8, 9, 10, 11, 12]
+            filename = "_".join(itemgetter(*indexes)(cells)) + ".txt"
             outFile.write(
                 line.rstrip("\r\n") + "\t" + dirname + filename + "\n")
             if xlsFlag:

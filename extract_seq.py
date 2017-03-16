@@ -25,9 +25,9 @@ u"""Sequence_Extractor 配列の特定領域を切り取って保存するプロ
 
 """
 
-__Author__ = "Yoshihiro Tanaka"
-__date__ = "2014-10-10"
-__version__ = "1.0.0"
+__Author__ = 'Yoshihiro Tanaka'
+__date__ = '2014-10-10'
+__version__ = '1.0.0'
 
 import os, sys, commands
 from multiprocessing import Pool
@@ -45,7 +45,7 @@ def waypoint(args, **kwargs):
 
 def optSettings():
     u"""コマンドラインオプションの管理関数"""
-    usage = "%prog [-ioce] [options] [-s] [--concat] [--silent] [file]\nDetailed options -h or --help"
+    usage = '%prog [-ioce] [options] [-s] [--concat] [--silent] [file]\nDetailed options -h or --help'
     version = __version__
     parser = OptionParser(usage=usage, version=version)
 
@@ -119,16 +119,16 @@ class FileProcessing:
         try:
             self._TABLE_FILE = args[0]
         except:
-            print "Table file is not specified."
+            print 'Table file is not specified.'
             sys.exit()
-        self._INPUT_DIR = options.input_dir.rstrip("/")
+        self._INPUT_DIR = options.input_dir.rstrip('/')
         # ファイルが指定されていた場合は終了
         if os.path.isfile(self._INPUT_DIR):
-            print "Please specify the directory name, not the file name."
+            print 'Please specify the directory name, not the file name.'
             sys.exit()
-        self._OUTPUT_DIR = options.output_dir.rstrip("/")
+        self._OUTPUT_DIR = options.output_dir.rstrip('/')
         if os.path.isfile(self._OUTPUT_DIR):
-            print "Please specify the directory name, not the file name."
+            print 'Please specify the directory name, not the file name.'
             sys.exit()
         else:
             # 出力先に指定されたディレクトリが存在しなければ作成する
@@ -145,21 +145,21 @@ class FileProcessing:
         u"""抽出対象の配列情報,及びファイルと染色体番号との紐付けを行う辞書の作成を行う関数"""
         u"""xargs -n 1 basenameでパスを削ってファイル名のみ取得する
 
-        split("/")[-1]でも代用可
+        split('/')[-1]でも代用可
         """
         fileList = [
             r
             for r in commands.getoutput('ls ' + self._INPUT_DIR +
-                                        "/*.fa | xargs -n 1 basename").split(
-                                            "\n")
+                                        '/*.fa | xargs -n 1 basename').split(
+                                            '\n')
         ]
-        infile = open(self._TABLE_FILE, "r")
+        infile = open(self._TABLE_FILE, 'r')
         lines = infile.readlines()
         infile.close()
 
         exDict = {}
         for line in lines:
-            cells = [r.rstrip("\r\n") for r in line.split("\t")]
+            cells = [r.rstrip('\r\n') for r in line.split('\t')]
             EnsemblID = cells[1]
             chrom = str(cells[8])
             strand = cells[9]
@@ -182,7 +182,7 @@ class FileProcessing:
         tmpDict = {}
         for chrom in exDict.keys():
             for filename in fileList:
-                if "." + chrom + ".fa" in filename:
+                if '.' + chrom + '.fa' in filename:
                     # 染色体番号とfilenameを関連付け
                     fileDict[chrom] = filename
                     # exDictからfileListにある染色体番号のものだけ抜き出す
@@ -191,7 +191,7 @@ class FileProcessing:
 
     def extractSeq(self, filename, start_pos, end_pos):
         u"""配列の特定領域を抜き出している関数"""
-        infile = open(self._INPUT_DIR + "/" + filename, "r")
+        infile = open(self._INPUT_DIR + '/' + filename, 'r')
 
         start_pos = start_pos - self._EXTENSION
         end_pos = end_pos + self._EXTENSION
@@ -200,12 +200,12 @@ class FileProcessing:
         line = infile.readline()
         flag = False
         header = True
-        seq = ""
+        seq = ''
         while line:
             if header:
                 header = False
             else:
-                line = line.rstrip("\r\n")
+                line = line.rstrip('\r\n')
                 # decodeしてバイト数から文字数のカウントに変換(アルファベットなのでバイト数でも問題はないが一応)
                 length = len(line.decode('utf-8'))
                 if start <= end_pos and end_pos < start + length:
@@ -228,8 +228,8 @@ class FileProcessing:
     def reverseComp(self, seq):
         u"""Reverse complementを行う関数"""
         seq_OLD = seq
-        seq = ""
-        reDict = {"A": "T", "T": "A", "G": "C", "C": "G"}
+        seq = ''
+        reDict = {'A': 'T', 'T': 'A', 'G': 'C', 'C': 'G'}
         u"""文字列を反転させる
 
         ref. http://d.hatena.ne.jp/redcat_prog/20111104/1320395840
@@ -246,35 +246,35 @@ class FileProcessing:
         items = tuples[1]
         filename = tuples[2]
         if not self._SILENT:
-            print("Start the process of chromosome " + str(chrom) + ".")
+            print('Start the process of chromosome ' + str(chrom) + '.')
         for item in items:
-            outFile = open(self._OUTPUT_DIR + "/" + item[0] + "_" + chrom + "_"
-                           + item[1] + "_" + str(item[2]) + "_" + str(item[3])
-                           + "_" + item[4] + ".txt", "w")
+            outFile = open(self._OUTPUT_DIR + '/' + item[0] + '_' + chrom + '_'
+                           + item[1] + '_' + str(item[2]) + '_' + str(item[3])
+                           + '_' + item[4] + '.txt', 'w')
             seq = self.extractSeq(filename, item[2], item[3])
             # strandが-の場合はReverse complementを行う
-            if item[1] == "-" and self._STRAND:
+            if item[1] == '-' and self._STRAND:
                 seq = self.reverseComp(seq)
             if self._CONCAT:
                 outFile.write(seq)
             else:
                 for i in range(1, len(seq)):
                     if i % 50 == 0:
-                        outFile.write(seq[:10] + "\n")
+                        outFile.write(seq[:10] + '\n')
                         seq = seq[10:]
                     elif i % 10 == 0:
-                        outFile.write(seq[:10] + " ")
+                        outFile.write(seq[:10] + ' ')
                         seq = seq[10:]
                 if len(seq) != 0:
-                    outFile.write(seq + "\n")
+                    outFile.write(seq + '\n')
             outFile.close()
         if not self._SILENT:
-            print("Finished the process of chromosome " + str(chrom) + ".")
+            print('Finished the process of chromosome ' + str(chrom) + '.')
         return
 
     def output(self, exDict, fileDict):
         if not self._SILENT:
-            print "Start output"
+            print 'Start output'
         single = False
         if self._CPU_COUNT == -1:
             pool = Pool()
@@ -315,22 +315,22 @@ class FileProcessing:
             import xlwt
         except ImportError as e:
             print e
-            print "ex. sudo pip install xlwt"
+            print 'ex. sudo pip install xlwt'
             # xlwtパッケージがインストールされていない場合はエラーを出してtsvファイルのみ出力する
             xlsFlag = False
         if xlsFlag:
             book = xlwt.Workbook()
             sheet = book.add_sheet(self._TABLE_FILE)
 
-        infile = open(self._TABLE_FILE, "r")
+        infile = open(self._TABLE_FILE, 'r')
         lines = infile.readlines()
         infile.close()
 
-        outFile = open(self._TABLE_FILE + "_with_link.tsv", "w")
+        outFile = open(self._TABLE_FILE + '_with_link.tsv', 'w')
 
         row = 0
         for line in lines:
-            cells = [r.rstrip("\r\n") for r in line.split("\t")]
+            cells = [r.rstrip('\r\n') for r in line.split('\t')]
             column = 0
             if xlsFlag:
                 for cell in cells:
@@ -343,11 +343,11 @@ class FileProcessing:
             ref. http://stackoverflow.com/questions/11246189/how-to-convert-relative-path-to-absolute-path-in-unix
             """
             dirname = commands.getoutput('cd ' + self._OUTPUT_DIR +
-                                         ';pwd') + "/"
+                                         ';pwd') + '/'
             indexes = [1, 8, 9, 10, 11, 12]
-            filename = "_".join(itemgetter(*indexes)(cells)) + ".txt"
+            filename = '_'.join(itemgetter(*indexes)(cells)) + '.txt'
             outFile.write(
-                line.rstrip("\r\n") + "\t" + dirname + filename + "\n")
+                line.rstrip('\r\n') + '\t' + dirname + filename + '\n')
             if xlsFlag:
                 # HYPERLINK関数を使用してlinkを設定する
                 sheet.write(row, column,
@@ -365,4 +365,4 @@ if __name__ == '__main__':
     exDict, fileDict = fp.createDict()
     fp.output(exDict, fileDict)
     fp.linkFileCreate()
-    print "All processing has finished."
+    print 'All processing has finished.'

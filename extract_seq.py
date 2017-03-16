@@ -3,7 +3,6 @@
 #
 u"""Sequence_Extractor 配列の特定領域を切り取って保存するプログラム
 
- LAST_UPDATE   : 2014-11-13
  推奨パッケージ: xlwt(必須ではありません)
  動作確認環境  :
     Mac OS X v10.9.4    (Python 2.7.6)

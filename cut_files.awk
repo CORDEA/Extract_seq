@@ -3,7 +3,7 @@
 #
 # Author : Yoshihiro Tanaka
 # Date   : 2014-11-04
-# Version: 0.1.3
+# Version: 1.0.0
 
 function output(chrom, header, seq) {
     filename = "db/Canis_familiaris.CanFam3.1.dna.chromosome." chrom ".fa";

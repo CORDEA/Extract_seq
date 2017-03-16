@@ -27,7 +27,7 @@ u"""Sequence_Extractor 配列の特定領域を切り取って保存するプロ
 
 __Author__  =  "Yoshihiro Tanaka"
 __date__    =  "2014-10-10"
-__version__ =  "0.1.5 (Stable)"
+__version__ =  "1.0.0"
 
 import os, sys, commands
 from multiprocessing import Pool
